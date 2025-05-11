@@ -14,4 +14,17 @@ WriteMakefile(
     },
     MIN_PERL_VERSION => '5.040',
     EXE_FILES        => [ 'bin/app.psgi', 'bin/blurfill' ],
+    META_MERGE    => {
+        'meta-spec' => { version => 2 },
+        resources => {
+            repository => {
+                type => 'git',
+                url  => 'https://github.com/davorg-cpan/app-blurfill.git',
+                web  => 'https://github.com/davorg-cpan/app-blurfill',
+            },
+            bugtracker => {
+                web  => 'https://github.com/davorg-cpan/app-blurfill/issues',
+            },
+        },
+    },
 );
