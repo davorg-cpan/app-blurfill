@@ -14,8 +14,9 @@ class App::BlurFill {
 
   field $output  :param = do {
     my ($name, $path, $ext) = fileparse($file, qr/\.[^.]*$/);
+    $path =~ s[/$][];
 
-    my $dir = tempdir(CLEANUP => 1);
+    my $dir = caller eq 'App::BlurFill::CLI' ? $path : tempdir(CLEANUP => 1);
 
     my $filename = "${name}_blur$ext";
 
