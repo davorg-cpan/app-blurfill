@@ -13,5 +13,5 @@ WriteMakefile(
         'Test::More'     => 0,
     },
     MIN_PERL_VERSION => '5.040',
-    BIN              => [ 'bin/app.psgi', 'bin/blurfill' ],
+    EXE_FILES        => [ 'bin/app.psgi', 'bin/blurfill' ],
 );
