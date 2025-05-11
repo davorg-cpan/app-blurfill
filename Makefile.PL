@@ -11,6 +11,8 @@ WriteMakefile(
         'File::Basename' => 0,
         'File::Temp'     => 0,
         'Test::More'     => 0,
+        'Dancer2'        => 0,
+        'Plack'          => 0,
     },
     MIN_PERL_VERSION => '5.040',
     EXE_FILES        => [ 'bin/app.psgi', 'bin/blurfill' ],
