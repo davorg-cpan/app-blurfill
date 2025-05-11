@@ -3,6 +3,8 @@ use v5.40;
 package App::BlurFill::Web;
 use Dancer2;
 
+our VERSION = '0.0.1';
+
 use File::Temp qw(tempfile tempdir);
 use App::BlurFill;
 

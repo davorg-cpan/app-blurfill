@@ -2,6 +2,8 @@ use v5.40;
 use experimental 'class';
 
 class App::BlurFill {
+    our $VERSION = '0.0.1';
+
     use Imager;
     use File::Basename 'fileparse';
     use File::Temp 'tempdir';
