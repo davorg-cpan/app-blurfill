@@ -9,5 +9,7 @@ README.md
 t/00-basic.t
 t/01-cli.t
 t/02-web.t
+t/pod_coverage.t
+t/pod.t
 t/test.jpg
 Changes.md
