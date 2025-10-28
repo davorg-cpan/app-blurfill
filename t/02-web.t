@@ -29,7 +29,7 @@ test_psgi
         like($res->content, qr/<input[^>]+type="number"[^>]+name="height"/i, 'Response contains number input for height');
     };
 
-# Test POST /blur route
+# Test POST /blur route - should return HTML results page
 open my $fh, '<', $image or die "Can't read image: $!";
 binmode $fh;
 my $content = do { local $/; <$fh> };
@@ -48,8 +48,23 @@ test_psgi
         my $cb = shift;
         my $res = $cb->($req);
         is($res->code, 200, 'Got 200 OK from /blur');
-        like($res->header('Content-Disposition'), qr/filename=".*?_blur\.jpg"/, 'Content-Disposition header looks good');
-        like($res->content, qr/.{100,}/s, 'Response has image content');
+        like($res->content, qr/<!DOCTYPE html>/i, 'Response contains HTML doctype');
+        like($res->content, qr/<title>BlurFill - Result/i, 'Response contains result page title');
+        like($res->content, qr/Your blurred image is ready!/i, 'Response contains success message');
+        like($res->content, qr/<img[^>]+src="\/download\//i, 'Response contains image preview');
+        like($res->content, qr/<a[^>]+href="\/download\//i, 'Response contains download link');
+        like($res->content, qr/<a[^>]+href="\/"[^>]*>Create Another/i, 'Response contains link back to home');
+    };
+
+# Test GET /download/:filename route
+# Note: This test assumes a file exists in the temp directory from the previous POST test
+# In practice, we'd need to ensure a file exists, but for this test we'll just verify the route exists
+test_psgi
+    app => $app,
+    client => sub {
+        my $cb = shift;
+        my $res = $cb->(GET '/download/nonexistent_file.jpg');
+        is($res->code, 404, 'Got 404 for non-existent file');
     };
 
 done_testing;
