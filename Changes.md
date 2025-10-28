@@ -1,5 +1,11 @@
 # Change Log
 
+## [0.0.4] - 2025-10-28
+
+### Changed
+
+- Prepared for CPAN release
+
 ## [0.0.3] - 2025-05-11
 
 ### Added

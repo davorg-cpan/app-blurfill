@@ -78,7 +78,7 @@ use v5.40;
 package App::BlurFill::Web;
 use Dancer2;
 
-our $VERSION = '0.0.3';
+our $VERSION = '0.0.4';
 
 use File::Temp qw(tempfile tempdir);
 use File::Spec;
