@@ -88,7 +88,7 @@ use App::BlurFill;
 # Create a persistent temp directory for storing processed images
 my $TEMP_DIR = File::Temp::tempdir(CLEANUP => 1);
 
-sub get_css {
+sub _get_css {
   return <<'CSS';
     * {
       margin: 0;
@@ -280,7 +280,7 @@ CSS
 }
 
 get '/' => sub {
-  my $css = get_css();
+  my $css = _get_css();
   return <<"HTML";
 <!DOCTYPE html>
 <html lang="en">
@@ -381,7 +381,7 @@ post '/blur' => sub {
   File::Copy::copy($outfile, $persistent_path) or die "Copy failed: $!";
 
   # Display results page with image preview and download link
-  my $css = get_css();
+  my $css = _get_css();
   return <<"HTML";
 <!DOCTYPE html>
 <html lang="en">
