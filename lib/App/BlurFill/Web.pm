@@ -26,8 +26,13 @@ route.
 =head2 POST /blur
 
 This route accepts an image file upload and optional width and height parameters.
-It processes the image and returns a blurred version of the image.
-The blurred image is returned as a downloadable file.
+It processes the image and returns an HTML page displaying the blurred image with
+a download link and an option to create another image.
+
+=head2 GET /download/:filename
+
+This route serves the processed image file for download. The filename parameter
+should match a previously processed image stored in the temporary directory.
 
 =head1 PARAMETERS
 
@@ -55,11 +60,16 @@ The desired height of the output image. Default is 350 pixels.
 
 =head2 Using C<curl>
 
-  curl -OJ -X POST -F "image=@path/to/image.jpg" -F "width=800" -F "height=600" http://localhost:3000/blur
+  # This will return HTML with the results page
+  curl -X POST -F "image=@path/to/image.jpg" -F "width=800" -F "height=600" http://localhost:3000/blur
+  
+  # To download the image directly
+  curl -OJ http://localhost:3000/download/image_blur.png
 
 =head1 RESPONSE
 
-The response will be a blurred image file with the specified width and height.
+The POST /blur response will be an HTML page displaying the blurred image with
+download options. The GET /download/:filename response will be the actual image file.
 
 =cut
 
@@ -71,17 +81,15 @@ use Dancer2;
 our $VERSION = '0.0.3';
 
 use File::Temp qw(tempfile tempdir);
+use File::Spec;
+use File::Copy;
 use App::BlurFill;
 
-get '/' => sub {
-  return <<'HTML';
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BlurFill - Create Blurred Background Images</title>
-  <style>
+# Create a persistent temp directory for storing processed images
+my $TEMP_DIR = File::Temp::tempdir(CLEANUP => 1);
+
+sub get_css {
+  return <<'CSS';
     * {
       margin: 0;
       padding: 0;
@@ -172,7 +180,7 @@ get '/' => sub {
       gap: 16px;
     }
     
-    button {
+    button, .button {
       width: 100%;
       padding: 16px;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -184,14 +192,17 @@ get '/' => sub {
       cursor: pointer;
       transition: all 0.3s ease;
       box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
     }
     
-    button:hover {
+    button:hover, .button:hover {
       transform: translateY(-2px);
       box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
     }
     
-    button:active {
+    button:active, .button:active {
       transform: translateY(0);
     }
     
@@ -217,6 +228,40 @@ get '/' => sub {
     .info strong {
       color: #333;
     }
+
+    .result-image {
+      margin: 24px 0;
+      text-align: center;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .result-image img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .success-message {
+      background: #f0fdf4;
+      border-left: 4px solid #10b981;
+      padding: 16px;
+      margin-bottom: 24px;
+      border-radius: 4px;
+      color: #065f46;
+    }
+
+    .action-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .button-secondary {
+      background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    }
     
     @media (max-width: 640px) {
       .container {
@@ -227,10 +272,24 @@ get '/' => sub {
         font-size: 24px;
       }
       
-      .dimensions {
+      .dimensions, .action-buttons {
         grid-template-columns: 1fr;
       }
     }
+CSS
+}
+
+get '/' => sub {
+  my $css = get_css();
+  return <<"HTML";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BlurFill - Create Blurred Background Images</title>
+  <style>
+$css
   </style>
 </head>
 <body>
@@ -266,7 +325,7 @@ get '/' => sub {
       <p>1. Upload your image (JPEG, PNG, or GIF)</p>
       <p>2. Set your desired output dimensions</p>
       <p>3. Click "Generate" to create a blurred background with your image centered</p>
-      <p>4. Your processed image will download automatically</p>
+      <p>4. Your processed image will be displayed with a download link</p>
     </div>
   </div>
 </body>
@@ -298,8 +357,6 @@ post '/blur' => sub {
   return status 400, { error => "Unsupported file format: .$format" }
     unless exists $mime{$format};
 
-  my $content_type = $mime{$format};
-
   my $width  = query_parameters->get('width')  || 650;
   my $height = query_parameters->get('height') || 350;
 
@@ -318,13 +375,82 @@ post '/blur' => sub {
   } or return status 500, { error => "Processing failed: $@" };
 
   my ($out_name) = File::Basename::fileparse($outfile);
+  
+  # Copy the processed file to our persistent temp directory
+  my $persistent_path = File::Spec->catfile($TEMP_DIR, $out_name);
+  File::Copy::copy($outfile, $persistent_path) or die "Copy failed: $!";
 
-  response_header 'Content-Disposition' => qq{attachment; filename="$out_name"};
+  # Display results page with image preview and download link
+  my $css = get_css();
+  return <<"HTML";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BlurFill - Result</title>
+  <style>
+$css
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>BlurFill</h1>
+    <p class="subtitle">Your blurred image is ready!</p>
+    
+    <div class="success-message">
+      <strong>✓ Success!</strong> Your image has been processed successfully.
+    </div>
+    
+    <div class="result-image">
+      <img src="/download/$out_name" alt="Blurred image preview">
+    </div>
+    
+    <div class="action-buttons">
+      <a href="/download/$out_name" class="button" download>Download Image</a>
+      <a href="/" class="button button-secondary">Create Another</a>
+    </div>
+    
+    <div class="info">
+      <p><strong>What's next?</strong></p>
+      <p>• Click "Download Image" to save your blurred background</p>
+      <p>• Click "Create Another" to process a new image</p>
+    </div>
+  </div>
+</body>
+</html>
+HTML
+};
+
+get '/download/:filename' => sub {
+  my $filename = route_parameters->get('filename');
+  
+  # Security: only allow filenames without path traversal
+  return status 400, { error => 'Invalid filename' }
+    if $filename =~ m{[/\\]};
+  
+  my $filepath = File::Spec->catfile($TEMP_DIR, $filename);
+  
+  return status 404, { error => 'File not found' }
+    unless -f $filepath;
+  
+  # Determine content type from extension
+  my $ext = lc($filename);
+  $ext =~ s/.*\.//;
+  
+  my %mime = (
+    jpg  => 'image/jpeg',
+    jpeg => 'image/jpeg',
+    png  => 'image/png',
+    gif  => 'image/gif',
+  );
+  
+  my $content_type = $mime{$ext} || 'application/octet-stream';
+  
   send_file(
-    $outfile,
+    $filepath,
     system_path => 1,
     content_type => $content_type,
-    content_disposition => "attachment; filename=\"$out_name\"",
   );
 };
 
