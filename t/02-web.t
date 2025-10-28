@@ -29,7 +29,7 @@ test_psgi
         like($res->content, qr/<input[^>]+type="number"[^>]+name="height"/i, 'Response contains number input for height');
     };
 
-# Test POST /blur route - should return HTML results page
+# Test POST /blur route - should return an HTML results page
 open my $fh, '<', $image or die "Can't read image: $!";
 binmode $fh;
 my $content = do { local $/; <$fh> };
