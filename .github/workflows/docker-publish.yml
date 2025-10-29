@@ -24,6 +24,10 @@ jobs:
         run: |
           # Extract version from tag name (RELEASE_X.Y.Z -> X.Y.Z)
           VERSION=${GITHUB_REF#refs/tags/RELEASE_}
+          if [ -z "$VERSION" ] || [ "$VERSION" = "$GITHUB_REF" ]; then
+            echo "Error: Failed to extract version from tag $GITHUB_REF"
+            exit 1
+          fi
           echo "VERSION=$VERSION" >> $GITHUB_ENV
       
       - name: Set version from manual input
