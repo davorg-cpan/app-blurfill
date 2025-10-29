@@ -78,7 +78,7 @@ fi
 # Build the Docker image
 cd docker
 echo "Building Docker image..."
-docker build -t davorg/app-blurfill:latest -t davorg/app-blurfill:$ver .
+docker build -t davorg/app-blurfill:latest -t davorg/app-blurfill:$ver -f Dockerfile ..
 build_status=$?
 
 # Return to root for git operations
