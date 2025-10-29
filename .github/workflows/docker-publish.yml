@@ -81,20 +81,22 @@ jobs:
           # Create directory for logs
           mkdir -p cpanm-build-logs
           
-          # Try to extract logs from the debug container
-          CONTAINER_ID=$(docker create app-blurfill-debug:latest)
-          docker cp $CONTAINER_ID:/app/cpanm-logs/. cpanm-build-logs/ 2>/dev/null || echo "No logs found in container"
-          docker rm $CONTAINER_ID
-          
-          # Also try to get logs from any intermediate containers
-          docker ps -a --filter "ancestor=app-blurfill-debug:latest" --format "{{.ID}}" | while read container; do
-            docker cp $container:/app/cpanm-logs/. cpanm-build-logs/ 2>/dev/null || true
-            docker cp $container:/root/.cpanm/work/. cpanm-build-logs/ 2>/dev/null || true
-          done
+          # Try to extract logs from the debug container if it was created
+          if docker image inspect app-blurfill-debug:latest >/dev/null 2>&1; then
+            echo "Debug image found, extracting logs..."
+            CONTAINER_ID=$(docker create app-blurfill-debug:latest 2>/dev/null || echo "")
+            if [ -n "$CONTAINER_ID" ]; then
+              docker cp $CONTAINER_ID:/app/cpanm-logs/. cpanm-build-logs/ 2>/dev/null || echo "No logs found in /app/cpanm-logs"
+              docker cp $CONTAINER_ID:/root/.cpanm/work/. cpanm-build-logs/cpanm-work/ 2>/dev/null || echo "No logs found in /root/.cpanm/work"
+              docker rm $CONTAINER_ID
+            fi
+          else
+            echo "Debug image not found (build may have failed early)"
+          fi
           
           # List what we found
           echo "Captured logs:"
-          find cpanm-build-logs -type f
+          find cpanm-build-logs -type f 2>/dev/null || echo "No log files found"
       
       - name: Upload cpanm build logs
         if: steps.docker_build.outcome == 'failure'
