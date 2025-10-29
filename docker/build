@@ -52,9 +52,15 @@ echo "Building version $ver from tag $tag"
 current_branch=$(git rev-parse --abbrev-ref HEAD)
 echo "Saving current state (branch: $current_branch)"
 
-# Stash any uncommitted changes
-git stash push -u -m "docker-build-stash-$(date +%s)"
-stash_result=$?
+# Stash any uncommitted changes (only if there are changes to stash)
+stash_created=0
+if ! git diff-index --quiet HEAD --; then
+    stash_name="docker-build-stash-$(date +%s)"
+    git stash push -u -m "$stash_name"
+    if [ $? -eq 0 ]; then
+        stash_created=1
+    fi
+fi
 
 # Checkout the tag
 echo "Checking out tag $tag"
@@ -63,7 +69,7 @@ checkout_result=$?
 
 if [ $checkout_result -ne 0 ]; then
     echo "Error: Failed to checkout tag $tag"
-    if [ $stash_result -eq 0 ]; then
+    if [ $stash_created -eq 1 ]; then
         git stash pop
     fi
     exit 1
@@ -82,12 +88,9 @@ cd ..
 echo "Restoring original state"
 git checkout "$current_branch"
 
-# Pop stash if we stashed changes
-if [ $stash_result -eq 0 ]; then
-    # Check if there's actually a stash to pop
-    if git stash list | grep -q "docker-build-stash"; then
-        git stash pop
-    fi
+# Pop stash if we created one
+if [ $stash_created -eq 1 ]; then
+    git stash pop
 fi
 
 # Only push if the build succeeded
