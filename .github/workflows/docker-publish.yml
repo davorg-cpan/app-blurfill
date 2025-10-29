@@ -52,6 +52,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: docker/Dockerfile
           push: true
           tags: |
             davorg/app-blurfill:${{ env.VERSION }}
@@ -67,7 +68,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./Dockerfile.debug
+          file: docker/Dockerfile.debug
           push: false
           load: true
           tags: app-blurfill-debug:latest
