@@ -23,13 +23,13 @@ COPY . .
 # This version captures logs even on failure
 RUN cpanm --notest --installdeps . ; \
     EXIT_CODE=$? ; \
-    mkdir -p /app/cpanm-logs && \
+    mkdir -p /app/cpanm-logs ; \
     for log in /root/.cpanm/work/*/build.log; do \
       if [ -f "$log" ]; then \
         WORK_ID=$(basename $(dirname "$log")) ; \
         cp "$log" "/app/cpanm-logs/build-${WORK_ID}.log" ; \
       fi ; \
-    done ; \
+    done 2>/dev/null ; \
     exit $EXIT_CODE
 
 # Expose port 3000 (default Dancer2/Plack port)
