@@ -24,7 +24,12 @@ COPY . .
 RUN cpanm --notest --installdeps . ; \
     EXIT_CODE=$? ; \
     mkdir -p /app/cpanm-logs && \
-    find /root/.cpanm/work -name 'build.log' -exec sh -c 'cp "$1" "/app/cpanm-logs/build-$(basename $(dirname "$1")).log"' _ {} \; 2>/dev/null || true ; \
+    for log in /root/.cpanm/work/*/build.log; do \
+      if [ -f "$log" ]; then \
+        WORK_ID=$(basename $(dirname "$log")) ; \
+        cp "$log" "/app/cpanm-logs/build-${WORK_ID}.log" ; \
+      fi ; \
+    done ; \
     exit $EXIT_CODE
 
 # Expose port 3000 (default Dancer2/Plack port)

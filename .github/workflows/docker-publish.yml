@@ -84,11 +84,13 @@ jobs:
           # Try to extract logs from the debug container if it was created
           if docker image inspect app-blurfill-debug:latest >/dev/null 2>&1; then
             echo "Debug image found, extracting logs..."
-            CONTAINER_ID=$(docker create app-blurfill-debug:latest 2>/dev/null || echo "")
-            if [ -n "$CONTAINER_ID" ]; then
+            if CONTAINER_ID=$(docker create app-blurfill-debug:latest 2>/dev/null); then
+              echo "Container created: $CONTAINER_ID"
               docker cp $CONTAINER_ID:/app/cpanm-logs/. cpanm-build-logs/ 2>/dev/null || echo "No logs found in /app/cpanm-logs"
               docker cp $CONTAINER_ID:/root/.cpanm/work/. cpanm-build-logs/cpanm-work/ 2>/dev/null || echo "No logs found in /root/.cpanm/work"
               docker rm $CONTAINER_ID
+            else
+              echo "Failed to create container from debug image"
             fi
           else
             echo "Debug image not found (build may have failed early)"
