@@ -57,9 +57,6 @@ jobs:
           tags: |
             davorg/app-blurfill:${{ env.VERSION }}
             davorg/app-blurfill:latest
-          platforms: linux/amd64,linux/arm64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
       
       - name: Build debug image to capture logs
         if: steps.docker_build.outcome == 'failure'
@@ -72,8 +69,6 @@ jobs:
           push: false
           load: true
           tags: app-blurfill-debug:latest
-          platforms: linux/amd64
-          cache-from: type=gha
       
       - name: Extract cpanm build logs
         if: steps.docker_build.outcome == 'failure'
