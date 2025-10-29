@@ -38,6 +38,10 @@ run it locally using the standard Perl web application runner, `plackup`.
 Once that program is running you can visit the application in your browser by
 going to http://localhost:5000/.
 
+See the
+[documentation](https://metacpan.org/dist/Plack/view/script/plackup)
+for more information on running web applications using `plackup`.
+
 ### Docker container
 
 The web application is also available from the Docker Hub. You can start it by
