@@ -9,13 +9,42 @@ This document describes how to build and run the App::BlurFill web application u
 
 ## Building the Docker Image
 
-To build the Docker image, run the following command from the root of the repository:
+### Manual Build
+
+To build the Docker image manually, run the following command from the root of the repository:
 
 ```bash
 docker build -t app-blurfill .
 ```
 
 **Note**: The build process downloads Perl modules from CPAN, which requires internet access.
+
+### Automated Build Script
+
+The repository includes an automated build script at `docker/build` that handles version tagging and Git operations:
+
+```bash
+# Build from a specific version tag (RELEASE_x.x.x format)
+./docker/build RELEASE_1.0.0
+
+# Or use semver format (automatically looks for RELEASE_x.x.x tag)
+./docker/build 1.0.0
+
+# Or build from the highest available RELEASE tag
+./docker/build
+```
+
+The build script:
+- Validates that the specified version tag exists in the repository
+- Stashes any uncommitted changes
+- Checks out the specified tag
+- Builds the Docker image with appropriate version tags
+- Restores the original branch and uncommitted changes
+- Pushes the built images to Docker Hub (if build succeeds)
+
+**Requirements**:
+- Git repository with RELEASE_x.x.x tags
+- Docker credentials configured for pushing to davorg/app-blurfill
 
 ## Running the Container
 
