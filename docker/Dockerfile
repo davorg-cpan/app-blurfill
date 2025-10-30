@@ -22,8 +22,8 @@ COPY . .
 # Based on PREREQ_PM in Makefile.PL
 RUN cpanm --notest --installdeps .
 
-# Expose port 3000 (default Dancer2/Plack port)
-EXPOSE 3000
+# Expose port 8080 (default Dancer2/Plack port)
+EXPOSE 8080
 
 # Run the PSGI application with plackup and Starman server
-CMD ["plackup", "-p", "${PORT:-8080}", "-s", "Starman", "bin/app.psgi"]
+CMD sh -lc 'exec plackup -I lib -s Starman -a bin/app.psgi -o 0.0.0.0 -p ${PORT:-8080}'
