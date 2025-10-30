@@ -432,8 +432,8 @@ $css
     
     <div class="info">
       <p><strong>What's next?</strong></p>
-      <p>• Click "Download Image" to save your resized background</p>
-      <p>• Click "Create Another" to process a new image</p>
+      <p>• Click "Download image" to save your resized background</p>
+      <p>• Click "Create another" to process a new image</p>
     </div>
   </div>
 </body>
