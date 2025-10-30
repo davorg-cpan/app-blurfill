@@ -72,6 +72,12 @@ jobs:
             ${{ env.DH_IMAGE }}:latest
 
       # ---------- NEW: Auth to Google via WIF ----------
+      - name: Debug GH claims (temp)
+        run: |
+          echo "GITHUB_REPOSITORY=${GITHUB_REPOSITORY}"   # e.g. davorg/app-blurfill
+          echo "GITHUB_REF=${GITHUB_REF}"                 # e.g. refs/tags/RELEASE_1.2.3
+          echo "GITHUB_REF_NAME=${GITHUB_REF_NAME}"
+
       - name: Authenticate to Google Cloud (WIF)
         id: auth
         uses: google-github-actions/auth@v2
