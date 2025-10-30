@@ -338,7 +338,7 @@ $css
       <p><strong>How it works:</strong></p>
       <p>1. Upload your image (JPEG, PNG, or GIF)</p>
       <p>2. Set your desired output dimensions</p>
-      <p>3. Click "Generate" to create a blurred background with your image centered</p>
+      <p>3. Click "Generate" to create a resized image with your source image centered and filled</p>
       <p>4. Your processed image will be displayed with a download link</p>
     </div>
     <div class="credits">
