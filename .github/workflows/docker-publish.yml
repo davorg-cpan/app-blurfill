@@ -11,16 +11,30 @@ on:
         required: true
         type: string
 
+env:
+  # --- GCP constants (yours) ---
+  PROJECT_ID: dave-web-apps
+  PROJECT_NUMBER: "764155291719"
+  REGION: europe-west1
+  AR_REPO: containers
+  SERVICE: blurfill
+  AR_HOST: europe-west1-docker.pkg.dev
+
+  # --- Image names ---
+  DH_IMAGE: docker.io/davorg/app-blurfill
+  AR_IMAGE: europe-west1-docker.pkg.dev/dave-web-apps/containers/blurfill
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    
+      id-token: write   # << needed for Google WIF
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set version from tag
         if: github.event_name == 'push'
         run: |
@@ -31,21 +45,21 @@ jobs:
             exit 1
           fi
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-      
+
       - name: Set version from manual input
         if: github.event_name == 'workflow_dispatch'
         run: |
           echo "VERSION=${{ inputs.version }}" >> $GITHUB_ENV
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: davorg
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
-      
+
       - name: Build and push Docker image
         id: docker_build
         uses: docker/build-push-action@v5
@@ -54,6 +68,75 @@ jobs:
           file: docker/Dockerfile
           push: true
           tags: |
-            davorg/app-blurfill:${{ env.VERSION }}
-            davorg/app-blurfill:latest
-      
+            ${{ env.DH_IMAGE }}:${{ env.VERSION }}
+            ${{ env.DH_IMAGE }}:latest
+
+      # ---------- NEW: Auth to Google via WIF ----------
+      - name: Authenticate to Google Cloud (WIF)
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/${{ env.PROJECT_NUMBER }}/locations/global/workloadIdentityPools/gh-pool/providers/gh-provider
+          service_account: gh-actions-deployer@${{ env.PROJECT_ID }}.iam.gserviceaccount.com
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      # ---------- NEW: Login to Artifact Registry ----------
+      - name: Login to Artifact Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.AR_HOST }}
+          username: oauth2accesstoken
+          password: ${{ steps.auth.outputs.access_token }}
+
+      # ---------- NEW: Install skopeo & jq for mirroring ----------
+      - name: Install skopeo & jq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y skopeo jq
+
+      # ---------- NEW: Mirror Docker Hub → Artifact Registry ----------
+      - name: Mirror image to Artifact Registry (tagged with commit SHA)
+        id: mirror
+        env:
+          DH_TAG: ${{ env.DH_IMAGE }}:${{ env.VERSION }}
+          AR_TAG: ${{ env.AR_IMAGE }}:${{ github.sha }}
+        run: |
+          set -euo pipefail
+          echo "Copying ${DH_TAG} → ${AR_TAG}"
+          skopeo copy --all "docker://${DH_TAG}" "docker://${AR_TAG}"
+
+          echo "Inspecting ${AR_TAG} for digest…"
+          DIGEST=$(skopeo inspect "docker://${AR_TAG}" | jq -r '.Digest')
+          if [ -z "$DIGEST" ] || [ "$DIGEST" = "null" ]; then
+            echo "Failed to fetch digest from AR tag" >&2
+            exit 1
+          fi
+          echo "digest=${DIGEST}" >> "$GITHUB_OUTPUT"
+          echo "image_ref=${{ env.AR_IMAGE }}@${DIGEST}" >> "$GITHUB_OUTPUT"
+
+      # ---------- NEW: Deploy to Cloud Run by immutable digest ----------
+      - name: Deploy to Cloud Run
+        env:
+          IMAGE_REF: ${{ steps.mirror.outputs.image_ref }}
+        run: |
+          set -euo pipefail
+          echo "Deploying $IMAGE_REF to Cloud Run service ${{ env.SERVICE }}…"
+          gcloud run deploy "${{ env.SERVICE }}" \
+            --image="${IMAGE_REF}" \
+            --region="${{ env.REGION }}" \
+            --allow-unauthenticated \
+            --min-instances=0 \
+            --max-instances=10 \
+            --cpu=1 --memory=512Mi \
+            --concurrency=80 \
+            --set-env-vars=PLACK_ENV=production \
+            --tag=prod
+
+      - name: Show deployed revision / image
+        run: >
+          gcloud run services describe "${{ env.SERVICE }}"
+          --region="${{ env.REGION }}"
+          --format='value(status.latestReadyRevisionName,template.spec.containers[0].image)'
+
