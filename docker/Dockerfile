@@ -26,4 +26,4 @@ RUN cpanm --notest --installdeps .
 EXPOSE 3000
 
 # Run the PSGI application with plackup and Starman server
-CMD ["plackup", "-p", "3000", "-s", "Starman", "bin/app.psgi"]
+CMD ["plackup", "-p", "${PORT:-8080}", "-s", "Starman", "bin/app.psgi"]
