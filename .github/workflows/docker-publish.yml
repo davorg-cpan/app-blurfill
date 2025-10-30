@@ -48,7 +48,6 @@ jobs:
       
       - name: Build and push Docker image
         id: docker_build
-        continue-on-error: true
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -58,54 +57,3 @@ jobs:
             davorg/app-blurfill:${{ env.VERSION }}
             davorg/app-blurfill:latest
       
-      - name: Build debug image to capture logs
-        if: steps.docker_build.outcome == 'failure'
-        id: debug_build
-        continue-on-error: true
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: docker/Dockerfile.debug
-          push: false
-          load: true
-          tags: app-blurfill-debug:latest
-      
-      - name: Extract cpanm build logs
-        if: steps.docker_build.outcome == 'failure'
-        continue-on-error: true
-        run: |
-          # Create directory for logs
-          mkdir -p cpanm-build-logs
-          
-          # Try to extract logs from the debug container if it was created
-          if docker image inspect app-blurfill-debug:latest >/dev/null 2>&1; then
-            echo "Debug image found, extracting logs..."
-            if CONTAINER_ID=$(docker create app-blurfill-debug:latest 2>/dev/null); then
-              echo "Container created: $CONTAINER_ID"
-              docker cp $CONTAINER_ID:/root/.cpanm/work/*/build.log cpanm-build-logs/cpanm-work/ 2>/dev/null || echo "No logs found in /root/.cpanm/work"
-              docker rm $CONTAINER_ID
-            else
-              echo "Failed to create container from debug image"
-            fi
-          else
-            echo "Debug image not found (build may have failed early)"
-          fi
-          
-          # List what we found
-          echo "Captured logs:"
-          find cpanm-build-logs -type f 2>/dev/null || echo "No log files found"
-      
-      - name: Upload cpanm build logs
-        if: steps.docker_build.outcome == 'failure'
-        uses: actions/upload-artifact@v4
-        with:
-          name: cpanm-build-logs
-          path: cpanm-build-logs/
-          if-no-files-found: warn
-          retention-days: 30
-      
-      - name: Fail if build failed
-        if: steps.docker_build.outcome == 'failure'
-        run: |
-          echo "Docker build failed. Check the uploaded artifacts for cpanm build logs."
-          exit 1
