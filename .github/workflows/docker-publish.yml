@@ -87,7 +87,7 @@ jobs:
           token_format: access_token
 
       - name: Set up gcloud
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@v3
 
       # ---------- NEW: Login to Artifact Registry ----------
       - name: Login to Artifact Registry
