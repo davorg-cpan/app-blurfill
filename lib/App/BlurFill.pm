@@ -91,7 +91,10 @@ class App::BlurFill {
     "$dir/$filename";
   };
 
-  field $imager  :param = Imager->new(file => $file);
+  field $imager  :param = do {
+    warn "\$file = $file\n";
+    Imager->new(file => $file);
+  };
 
   method process {
     my $background = $imager->copy;
