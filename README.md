@@ -54,5 +54,7 @@ number can be controlled by changing the number in the command.
 
 ### Demo version
 
-We will have a demo version available on the internet very soon.
+A demo version of the web application is online at:
+
+* https://blurfill.davecross.co.uk/
 

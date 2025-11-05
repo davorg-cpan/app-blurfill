@@ -1,11 +1,39 @@
 # Docker Usage
 
-This document describes how to build and run the App::BlurFill web application using Docker.
+This document describes how to build and run the App::BlurFill web application
+using Docker.
 
 ## Prerequisites
 
 - Docker installed on your system
 - Internet connection for downloading Perl dependencies during build
+
+## Using the pre-built Docker image
+
+The easiest way to run the App::BlurFill web app is to use the pre-built image
+from Docker Hub:
+
+```bash
+docker run --rm -p 8080:3000 davorg/app-blurfill
+```
+
+Then open the app in your browser at:
+
+http://localhost:8080/
+
+The `-p` flag maps a port on your machine (here `8080`) to the port the app
+listens on inside the container (`3000`).
+
+If you prefer to use a different external port, just change the number before
+the colon:
+
+```bash
+docker run --rm -p 5000:3000 davorg/app-blurfill
+# now available at http://localhost:5000/
+```
+
+The image contains everything you need (Perl, dependencies, and the Dancer2
+web app), so you don’t need a local Perl installation at all – just Docker.
 
 ## Building the Docker Image
 
