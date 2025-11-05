@@ -48,12 +48,18 @@ class App::BlurFill::CLI {
     my %opts;
     GetOptions(\%opts, 'width:i', 'height:i', 'output:s');
 
+warn "\@ARGV = '@ARGV'\n";
+
     my $in = shift @ARGV or die "Usage: blurfill [--width w] [--height h] [--output o] image_file\n";
+
+warn "\$in = $in\n";
 
     my $blur = App::BlurFill->new(
         file   => $in,
         %opts,
     );
+
+warn "\$blur->file = ", $blur->file . "\n";
 
     my $outfile = $blur->process;
     say "Wrote $outfile";
