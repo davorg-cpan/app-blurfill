@@ -80,6 +80,11 @@ class App::BlurFill {
   field $width   :param = 650;
   field $height  :param = 350;
 
+  field $imager  :param = do {
+    warn "\$file = $file\n";
+    Imager->new(file => $file);
+  };
+
   field $output  :param = do {
     my ($name, $path, $ext) = fileparse($file, qr/\.[^.]*$/);
     $path =~ s[/$][];
@@ -89,11 +94,6 @@ class App::BlurFill {
     my $filename = "${name}_blur$ext";
 
     "$dir/$filename";
-  };
-
-  field $imager  :param = do {
-    warn "\$file = $file\n";
-    Imager->new(file => $file);
   };
 
   method process {
