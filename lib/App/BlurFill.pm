@@ -84,7 +84,7 @@ class App::BlurFill {
     warn "\$file = $file\n";
     my $img = Imager->new(file => $file);
     die unless $img;
-    return $img;
+    $img;
   };
 
   field $output  :param = do {
