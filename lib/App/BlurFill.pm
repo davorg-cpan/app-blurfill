@@ -82,7 +82,6 @@ class App::BlurFill {
 
   field $imager  :param = do {
     warn "\$file = $file\n";
-    my $img = Imager->new(file => $file);
 
 use Cwd;
 warn "Directory: " . cwd . "\n";
@@ -92,7 +91,9 @@ if (-f $file) {
   warn "I can't see $file\n";
 }
 
-    die unless $img;
+    my $img = Imager->new(file => $file)
+      or die Imager->errstr;
+
     $img;
   };
 
