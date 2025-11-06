@@ -81,20 +81,8 @@ class App::BlurFill {
   field $height  :param = 350;
 
   field $imager  :param = do {
-    warn "\$file = $file\n";
-
-use Cwd;
-warn "Directory: " . cwd . "\n";
-if (-f $file) {
-  warn "I can see $file\n";
-} else {
-  warn "I can't see $file\n";
-}
-
-    my $img = Imager->new(file => $file)
+    Imager->new(file => $file)
       or die Imager->errstr;
-
-    $img;
   };
 
   field $output  :param = do {
