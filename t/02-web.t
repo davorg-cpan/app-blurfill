@@ -9,7 +9,7 @@ use File::Basename;
 use App::BlurFill::Web;
 my $app = App::BlurFill::Web->to_app;
 
-my $image = "t/test.jpg";
+my $image = "t/test.png";
 plan skip_all => "Test image $image not found" unless -e $image;
 
 # Test GET / route
