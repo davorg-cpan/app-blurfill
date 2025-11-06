@@ -76,7 +76,7 @@ class App::BlurFill {
   use File::Basename 'fileparse';
   use File::Temp 'tempdir';
 
-  field $file    :param :reader;
+  field $file    :param;
   field $width   :param = 650;
   field $height  :param = 350;
 
