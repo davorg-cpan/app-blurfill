@@ -8,7 +8,7 @@ WriteMakefile(
     ABSTRACT     => 'Blurred background fill image processor',
     PREREQ_PM    => {
         'Imager'         => 0,
-        'ImagerFile::PNG' => 0,
+        'Imager::File::PNG' => 0,
         'File::Basename' => 0,
         'File::Temp'     => 0,
         'Test::More'     => 0,
