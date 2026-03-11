@@ -47,7 +47,7 @@ for more information on running web applications using `plackup`.
 The web application is also available from the Docker Hub. You can start it by
 running:
 
-    docker run -p 8080:3000 davorg/app-blurfill
+    docker run -p 8080:8080 davorg/app-blurfill
 
 Once that is running, you can visit it at http://localhost:8080/ - the port
 number can be controlled by changing the number in the command.
