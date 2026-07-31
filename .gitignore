@@ -1,4 +1,5 @@
 App-BlurFill-*.tar.gz
+App-BlurFill-*/
 MYMETA.json
 MYMETA.yml
 Makefile

@@ -1,5 +1,13 @@
 # Change Log
 
+## [0.0.6] - 2026-07-31
+
+### Changed
+
+- Moved `App::BlurFill::Web` into the separate App-BlurFill-Web distribution.
+- Removed the Dancer2, Plack and Starman dependency chain from this distribution.
+- Changed the Docker image to contain only the Perl API and command-line program.
+
 ## [0.0.5] - 2025-10-30
 
 ### Changed
@@ -37,4 +45,3 @@
 ### Added
 
 - Everything
-
