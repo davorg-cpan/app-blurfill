@@ -38,7 +38,7 @@ use v5.40;
 use experimental 'class';
 
 class App::BlurFill::CLI {
-  our $VERSION = '0.0.6';
+  our $VERSION = '0.1.0';
 
   use Getopt::Long;
   use File::Basename;

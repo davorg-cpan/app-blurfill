@@ -70,7 +70,7 @@ use v5.40;
 use experimental 'class';
 
 class App::BlurFill {
-  our $VERSION = '0.0.6';
+  our $VERSION = '0.1.0';
 
   use Imager;
   use File::Basename 'fileparse';
@@ -116,6 +116,17 @@ class App::BlurFill {
     return $output;
   }
 }
+
+=head1 WEB INTERFACE
+
+The web interface previously included in this distribution was moved to the
+separate L<App::BlurFill::Web> distribution in version 0.0.6. Installing
+App::BlurFill now provides only the Perl API and the C<blurfill> command-line
+program, without requiring Dancer2, Plack, or Starman.
+
+=head1 SEE ALSO
+
+L<App::BlurFill::CLI>, L<App::BlurFill::Web>
 
 =pod
 

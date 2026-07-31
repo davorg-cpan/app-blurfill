@@ -29,7 +29,7 @@ The `davorg/app-blurfill` image contains the Perl API and the `blurfill`
 command, without a web framework. Mount a directory containing an image and
 run the command explicitly:
 
-    docker run --rm -v "$PWD:/work" davorg/app-blurfill:0.0.6 \
+    docker run --rm -v "$PWD:/work" davorg/app-blurfill:0.1.0 \
       blurfill /work/picture.png
 
 The web application is distributed separately as

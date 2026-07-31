@@ -1,5 +1,14 @@
 # Change Log
 
+## [0.1.0] - 2026-07-31
+
+### Changed
+
+- Documented the move of the web interface to App-BlurFill-Web in the
+  `App::BlurFill` POD.
+- Adopted a minor-version release to mark the new core-only distribution
+  boundary.
+
 ## [0.0.6] - 2026-07-31
 
 ### Changed
